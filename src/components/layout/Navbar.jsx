@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Github, Linkedin, Mail, ArrowUpRight } from "lucide-react";
 import profileImage from "../../uploads/image (2).png";
 
+const sectionHashes = ["#hero", "#about", "#specializations", "#experience", "#projects", "#skills", "#certifications", "#contact"];
+
 const navLinks = [
     { name: "About", href: "#about" },
     { name: "Experience", href: "#experience" },
@@ -14,6 +16,7 @@ const navLinks = [
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [activeHash, setActiveHash] = useState(window.location.hash || "#hero");
 
     useEffect(() => {
         const handleScroll = () => {
@@ -24,9 +27,44 @@ const Navbar = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    useEffect(() => {
+        const sections = sectionHashes
+            .map((hash) => document.querySelector(hash))
+            .filter(Boolean);
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visibleEntries = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+                if (visibleEntries.length === 0) return;
+
+                const nextHash = `#${visibleEntries[0].target.id}`;
+                setActiveHash((currentHash) => {
+                    if (currentHash !== nextHash) {
+                        window.history.replaceState(null, "", nextHash);
+                    }
+
+                    return nextHash;
+                });
+            },
+            {
+                rootMargin: "-25% 0px -45% 0px",
+                threshold: [0.2, 0.35, 0.5, 0.7],
+            }
+        );
+
+        sections.forEach((section) => observer.observe(section));
+
+        return () => observer.disconnect();
+    }, []);
+
     const scrollToSection = (href) => {
         const element = document.querySelector(href);
         if (element) {
+            window.history.replaceState(null, "", href);
+            setActiveHash(href);
             element.scrollIntoView({ behavior: "smooth" });
             setIsMobileMenuOpen(false);
         }
@@ -65,7 +103,9 @@ const Navbar = () => {
                             <a
                                 key={link.name}
                                 href={link.href}
-                                className="text-sm font-medium text-stone-300 transition-colors hover:text-white"
+                                className={`text-sm font-medium transition-colors hover:text-white ${
+                                    activeHash === link.href ? "text-white" : "text-stone-300"
+                                }`}
                                 onClick={(e) => {
                                     e.preventDefault();
                                     scrollToSection(link.href);
@@ -117,7 +157,9 @@ const Navbar = () => {
                                 <a
                                     key={link.name}
                                     href={link.href}
-                                    className="text-2xl font-semibold text-stone-200 hover:text-white"
+                                    className={`text-2xl font-semibold hover:text-white ${
+                                        activeHash === link.href ? "text-white" : "text-stone-200"
+                                    }`}
                                     onClick={(e) => {
                                         e.preventDefault();
                                         scrollToSection(link.href);
