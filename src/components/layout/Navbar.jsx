@@ -4,6 +4,7 @@ import { Menu, X, Github, Linkedin, Mail, ArrowUpRight } from "lucide-react";
 import profileImage from "../../uploads/image (2).png";
 
 const sectionHashes = ["#hero", "#about", "#specializations", "#experience", "#projects", "#skills", "#certifications", "#contact"];
+const normalizeHash = (hash) => (hash === "#hero" ? "" : hash);
 
 const navLinks = [
     { name: "About", href: "#about" },
@@ -43,7 +44,7 @@ const Navbar = () => {
                 const nextHash = `#${visibleEntries[0].target.id}`;
                 setActiveHash((currentHash) => {
                     if (currentHash !== nextHash) {
-                        window.history.replaceState(null, "", nextHash);
+                        window.history.replaceState(null, "", normalizeHash(nextHash) || window.location.pathname);
                     }
 
                     return nextHash;
@@ -63,7 +64,7 @@ const Navbar = () => {
     const scrollToSection = (href) => {
         const element = document.querySelector(href);
         if (element) {
-            window.history.replaceState(null, "", href);
+            window.history.replaceState(null, "", normalizeHash(href) || window.location.pathname);
             setActiveHash(href);
             element.scrollIntoView({ behavior: "smooth" });
             setIsMobileMenuOpen(false);
